@@ -1,0 +1,13 @@
+!       sample dclock defaults
+dclock*geometry:                240x87+271+5
+dclock*foreground:              chartreuse
+dclock*background:              DarkSlateGray
+dclock*led_off:              	DarkGreen
+dclock*borderColor:             white
+dclock*borderWidth:		2
+dclock*widthFactor:		0.143
+dclock*spaceFactor:		0.062
+dclock*bellFile:		/usr/share/sound/bell.wav
+dclock*alarmFile:		/usr/share/sound/digital.wav
+dclock*font:                    *helvetica-medium-r-normal--14*
+dclock*audioPlay:		/usr/bin/play

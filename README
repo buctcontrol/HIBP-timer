@@ -1,0 +1,99 @@
+dclock -- a digital clock for the X11 environment
+
+	Copyright (c) Dan Heller <argv@sun.com> 1988
+	v.2.0 Modifications by Tim Edwards <tim@sinh.stanford.edu> 1993
+	v.2.1 More modifications <tim@stravinsky.jhuapl.edu> 1999, 2000,
+	    2001, 2002
+	v.2.2 Added support for antialiased fonts using freefont (Xft),
+	    <tim@opencircuitdesign.com> 2008 (20th anniversary of dclock!)
+	Thanks to Amir J. Katz for beta-testing v.2.0 and the Imakefile.
+	Thanks to David A. Marks <dmarks@ford.com> for replacing the
+	    missing Makefile.orig for compilation on Sun, HP, and other
+	    systems.
+	Thanks to Andy Peterson <andy@petersonkids.com> for the UTC
+	    patch.
+
+-----------------------------------------------------------------------
+
+Compile with xmkmf in the standard way:
+
+	xmkmf
+	make depend
+	make
+
+For those people not using xmkmf:
+
+	cp Makefile.orig Makefile
+	make
+
+Read the comments below about possible compilation complications.
+
+-----------------------------------------------------------------------
+Compiler notes:
+
+1) Systems with no usleep() call should compile Dclock.c with -DNO_USLEEP.
+
+2) Systems without freefont (Xft) libraries and include files should remove
+   "-DXFT_SUPPORT" from the Imakefile before running xmkmf.
+
+3) Some systems may require changing "#include<time.h>" to
+   "#include<sys/time.h>" in Dclock.c.
+
+4) This code is K&R standard, not ANSI standard.  Beware with systems 
+   which normally expect ANSI code in order to compile.  May want to
+   use "gcc -traditional" to compile if your system has gcc.
+
+-----------------------------------------------------------------------
+
+When the program is running and the mouse is in the window, you can
+type the following keys:
+    
+    r -- toggle reverse video
+    s -- toggle seconds display
+    b -- toggle the bell to ring on half hours
+    j -- toggle jump or smooth scrolling
+    d -- toggle date string display
+    m -- toggle military (24hr) time format
+    a -- toggle the alarm clock
+    f -- toggle fade
+    : -- toggle blinking of the colon
+    / -- increase angle of digits
+    \ -- decrease angle of digits
+    + -- increase thickness of digit segments
+    - -- decrease thickness of digit segments
+    > -- increase spacing between digits
+    < -- decrease spacing between digits
+    q -- quit
+
+To set the alarm time, use the third mouse button and click on the
+digits with the first and second buttons (to increase and decrease the
+number, respectively), until the time is set correctly.  Alarm time is 
+set in 24-hour format to distringuish between am and pm.  If there is an 
+asterisk on the same line as the date, then the alarm is set.  Use the 'a' 
+key to set the alarm, or click on the date area with any mouse button.
+
+-----------------------------------------------------------------------
+Typical uses:
+
+    # set alarm for noon
+    dclock -fg green -bg black -led_off gray20 -alarmTime 12:00 -alarm
+
+    # set date string and have bell go off on hour/half-hour intervals
+    dclock -date "Today is %A, %B %d" -fg yellow -bg brown -led_off brown4 -bell
+
+    # set date more simply, use 24-hour military time format and display secs
+    dclock -date "%a, %b %d" -miltime -seconds
+
+    # the traditional red glow, no slant
+    dclock -fg red -bg darkblue -led_off #500050 -slope 50
+
+    # a pleasant blue glow
+    dclock -fg cyan -bg darkblue -led_off blue4
+
+    # Matt Magri's LCD dclock (magri@anarcho.com)
+    dclock -miltime -seconds -date "= %A, %d %B %Y =" -dateup \
+           -fg black -bg gray56 -led_off gray53 \
+           -fn "-adobe-helvetica-bold-r-normal--*-100-*-*-*" \
+           -geometry 256x80+0+0 &
+
+-----------------------------------------------------------------------
