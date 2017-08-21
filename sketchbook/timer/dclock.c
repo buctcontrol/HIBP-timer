@@ -217,8 +217,12 @@ int maketimeofday(struct timeval *tv, struct timezone *tz)
 {
     int ret = 0;
 
+#ifdef WITH_UART
     tv->tv_sec  = time_dest/1000;
     tv->tv_usec = (time_dest%1000)*1000;
+#else
+    gettimeofday(tv, NULL);
+#endif
     
     return ret;
 }
@@ -232,6 +236,7 @@ long getRacingTime()
     long value = 0;
     int ret = APP_SUCCESS;
 
+#ifdef WITH_UART
     memset(&buf, 1, sizeof(buf));
     do
     {
@@ -256,6 +261,7 @@ long getRacingTime()
             }
         }
     }while(1);
+#endif
 
     return value;
 }
