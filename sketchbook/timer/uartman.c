@@ -54,6 +54,86 @@ static int uartManPortSetProp(int hPort, const CfgUartProp* pProp);
 static int uartManBaudConversion(int nBaudRate);
 static int uartManSetTermios(struct termios * pNewtio, const CfgUartProp* pProp);
 
+/**
+ * @fn readn
+ * @brief Read "n" bytes from a descriptor.
+ * @param[in]  fd   : file descriptor
+ * @param[in]  vptr : buffer, allocated by caller   
+ * @param[in]  n    : maximum bytes to be read
+ * @return  the result of function. success or fail;
+ * @retval  -1 :  read error
+ * @retval   n :  n bytes are gotten
+ * @retval  <n :  '<n' bytes are gotten, but socket closed or file ended.
+ */
+ssize_t readn(int fd, void *vptr, size_t n)
+{
+    size_t  nleft;
+    ssize_t  nread;
+    char  *ptr = NULL;
+
+    ptr = vptr;
+    nleft = n;
+    while (nleft > 0) 
+    {
+        if ( (nread = read(fd, ptr, nleft)) < 0)
+        {
+            if (errno == EINTR)
+            {
+                nread = 0;
+            }
+            else
+            {
+                return(-1);
+            }
+        }
+        else if (nread == 0)
+        {
+            break; 
+        }
+        nleft -= nread;
+        ptr   += nread;
+    }
+    return ((ssize_t)(n - nleft));  
+}
+
+/**
+ * @fn writen
+ * @brief Write "n" bytes to a descriptor
+ * @param[in]  fd   : file descriptor
+ * @param[in]  vptr : buffer to be written, allocated by caller   
+ * @param[in]  n    : maximum bytes to be write
+ * @return  the result of function. success or fail;
+ * @retval  -1 :  write error
+ * @retval   n :  n bytes are gotten
+ * @retval  <n :  '<n' bytes are gotten, but socket closed or file ended.
+ */
+ssize_t writen(int fd, const void *vptr, size_t n)
+{
+    size_t    nleft;
+    ssize_t    nwritten;
+    const char  *ptr = NULL;
+
+    ptr = vptr;
+    nleft = n;
+    while (nleft > 0) 
+    {
+        if ( (nwritten = write(fd, ptr, nleft)) <= 0) 
+        {
+            if (errno == EINTR)
+            {
+                nwritten = 0;  
+            }
+            else
+            {
+                return(-1); 
+            }
+        }
+        nleft -= nwritten;
+        ptr   += nwritten;
+    }
+    return ((ssize_t)n);
+}
+
 /** 
  * @fn uartManClosePorts
  * @brief 关闭所有串口 
@@ -371,12 +451,12 @@ int uartManPort232Write(const uchar* pData, int nSize)
     }
 
     pthread_mutex_lock(&g_mut232);
-    nRet = write(g_h232, pData, nSize);
+    nRet = writen(g_h232, pData, nSize);
     pthread_mutex_unlock(&g_mut232);
 
     if(nRet != nSize)
     {
-        dbgPrintfl(WARN, "write err, nRet: %d, nSize: %d\n", nRet, nSize);
+        dbgPrintfl(WARN, "writen err, nRet: %d, nSize: %d\n", nRet, nSize);
         nRet = APP_FAIL;
         goto EXIT0;
     }
@@ -407,7 +487,7 @@ int uartManPort232ReadByte(uchar* pByte)
     }
 
     pthread_mutex_lock(&g_mut232);
-    nRet = read(g_h232, pByte, 1);
+    nRet = readn(g_h232, pByte, 1);
     pthread_mutex_unlock(&g_mut232);
 
     if(nRet != 1)
