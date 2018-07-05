@@ -12,7 +12,6 @@
 #include <sys/time.h>
 #include <locale.h>
 #include <X11/Intrinsic.h>
-#include <wiringPi.h>
 #include "uartman.h"
 #include "Dclock.h"
 
