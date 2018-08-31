@@ -634,8 +634,8 @@ DclockWidget    w;
 
     digit_w = (winwidth - slope_add * !(w->dclock.seconds) -
 	(slope_add * w->dclock.small_ratio) * w->dclock.seconds) / (3.5 + 
-	w->dclock.miltime + w->dclock.seconds * (2 * w->dclock.small_ratio 
-	+ w->dclock.sec_gap) + (2 * w->dclock.space_factor + sxw) * 
+	w->dclock.miltime + w->dclock.seconds * (3 * w->dclock.small_ratio 
+	+ w->dclock.sec_gap) + (3 * w->dclock.space_factor + sxw) * 
 	!(w->dclock.miltime));
 
     /* segment widths as measured in x and y */
@@ -1400,17 +1400,22 @@ int sec_val;
     GC gc = w->dclock.foreGC;
 
     XSetRegion(dpy, gc, clip_small);
-    digitxpos = (int)(winwidth - (2 * digit_w + slope_add) *
+    digitxpos = (int)(winwidth - (3 * digit_w + slope_add) *
 	    w->dclock.small_ratio);
     digitypos = (int)(BORDER*y_ratio + (1.0 - w->dclock.small_ratio) * 
 	    digit_h)+TopOffset;
     XSetClipOrigin(dpy, gc, digitxpos, digitypos);
-    XCopyArea(dpy, w->dclock.tiny_digits[sec_val/10], win, gc,
+    XCopyArea(dpy, w->dclock.tiny_digits[sec_val/100], win, gc,
 	    0, 0, (int)((digit_w + slope_add) * w->dclock.small_ratio), 
 	    (int)(digit_h * w->dclock.small_ratio), digitxpos, digitypos);
     digitxpos += (int)(digit_w * w->dclock.small_ratio);
     XSetClipOrigin(dpy, gc, digitxpos, digitypos);
-    XCopyArea(dpy, w->dclock.tiny_digits[sec_val%10], win, gc,
+    XCopyArea(dpy, w->dclock.tiny_digits[(sec_val%100)/10], win, gc,
+	    0, 0, (int)((digit_w + slope_add) * w->dclock.small_ratio), 
+	    (int)(digit_h * w->dclock.small_ratio), digitxpos, digitypos);
+    digitxpos += (int)(digit_w * w->dclock.small_ratio);
+    XSetClipOrigin(dpy, gc, digitxpos, digitypos);
+    XCopyArea(dpy, w->dclock.tiny_digits[(sec_val%100)%10], win, gc,
 	    0, 0, (int)((digit_w + slope_add) * w->dclock.small_ratio), 
 	    (int)(digit_h * w->dclock.small_ratio), digitxpos, digitypos);
 }
@@ -1430,17 +1435,16 @@ DclockWidget w;
     Window win = XtWindow(w);
     GC gc = w->dclock.foreGC;
     struct timeval now;
-    int min;
-    int sec;
 
     if (w->dclock.utc == True) 
 	l_time = gmtime(&t);
 
     maketimeofday(&now, NULL);
-    min = (now.tv_sec/60)%60;
-    sec = now.tv_sec%60;
+    l_time->tm_hour = (now.tv_sec/60)%60;
+    l_time->tm_min = now.tv_sec%60;
+    l_time->tm_sec = now.tv_usec/1000;
     if (w->dclock.display_time == True) {
-	    (void) sprintf(buf, "%02d%02d", min, sec);
+	    (void) sprintf(buf, "%02d%02d", l_time->tm_hour, l_time->tm_min);
     } else
 	/* display the alarm time */
 	(void) sprintf(buf, "%02d%02d", Alarm.hrs, Alarm.mins);
@@ -1453,13 +1457,13 @@ DclockWidget w;
     digitypos = (int)(BORDER*y_ratio)+TopOffset;
     XSetClipOrigin (dpy, gc, digitxpos, digitypos);
     XCopyArea(dpy,
-	w->dclock.colon[!w->dclock.blink || l_time->tm_sec & 1],
+	w->dclock.colon[!w->dclock.blink || l_time->tm_min & 1],
 	win, gc, 0, 0, (int)(slope_add + 0.5 * digit_w), (int)digit_h,
 	digitxpos, digitypos);
 
     //gettimeofday(&now, NULL);
-    maketimeofday(&now, NULL);
-    l_time->tm_sec = now.tv_usec/10000;
+    //maketimeofday(&now, NULL);
+    //l_time->tm_sec = now.tv_usec/10000;
     /* Next the seconds. */
     if (w->dclock.seconds)
 	draw_seconds(w, l_time->tm_sec);
